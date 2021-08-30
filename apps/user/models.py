@@ -8,11 +8,11 @@ from common.choices import SEX, MESSAGE_CHOICES
 # Create your models here.
 
 class User(AbstractUser):
-    name = models.CharField(_('name'), max_length=30, null=True, blank=True, help_text="姓名")
+    name = models.CharField(_('username'), max_length=30, null=True, blank=True, help_text="姓名")
     birthday = models.DateField(_('birthday'), null=True, blank=True, help_text="出生年月")
     gender = models.CharField(_('gender'), max_length=6, choices=SEX, default="female", help_text="性别")
     mobile = models.CharField(_('phone'), null=True, blank=True, max_length=11, help_text="电话")
-    email = models.EmailField(_('email'), max_length=100, null=True, blank=True, help_text="邮箱")
+    email = models.EmailField(_('email'), unique=True, max_length=128, null=True, blank=True, help_text="邮箱")
     avatar = models.ImageField(_('avatar'), upload_to="avatar/", help_text="用户头像")
 
     class Meta:

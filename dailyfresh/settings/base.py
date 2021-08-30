@@ -120,7 +120,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 
 # User Register Confirm Timedelta
-REGISTER_CONFIRM_TIMEDELTA = 7
+REGISTER_CONFIRM_TIMEDELTA = 30
+
+AUTHENTICATION_BACKENDS = (
+    'user.views.CustomBackend',
+)
 
 # rest_framework
 REST_FRAMEWORK = {
