@@ -24,4 +24,5 @@ urlpatterns = [
 
 router = DefaultRouter()
 router.register(r'category', views.GoodsCategoryViewSet, basename='category')
+router.register(r'', views.GoodsViewSet)
 urlpatterns += router.urls
