@@ -23,6 +23,8 @@ from rest_framework import permissions
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('user/', include('apps.user.urls')),
+    path('goods/', include('apps.goods.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api-auth/', include('rest_framework.urls')),
 ]

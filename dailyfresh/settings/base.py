@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import sys
+from django.conf.global_settings import gettext_noop
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,6 +105,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True  # 默认是Ture，时间是utc时间，如要用本地时间，所用手动修改为false！！！！
+
+LANGUAGES = (
+    ('zh-hans', gettext_noop('Simplified Chinese')),
+)
+
+# 翻译文件所在目录，需要手工创建
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 
 # 自定义登录
 AUTH_USER_MODEL = 'user.User'

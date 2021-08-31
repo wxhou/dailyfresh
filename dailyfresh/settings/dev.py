@@ -13,7 +13,7 @@ DATABASES = {
         "NAME": "drf_dailyfresh",
         'USER': 'root',  # 用户名，可以自己创建用户
         'PASSWORD': 'root1234',  # 密码
-        'HOST': '192.168.0.163',  # 服务IP
+        'HOST': '127.0.0.1',  # 服务IP
         'PORT': '3306',  # 端口
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),

@@ -7,7 +7,8 @@ from rest_framework import serializers, validators
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from common.validators import PhoneValidator
-from .models import User, VerifyCode
+from apps.user.models import User, VerifyCode, UserFav, UserAddress
+from apps.goods.serializers import GoodsSerializer
 
 logger = logging.getLogger('debug')
 
@@ -47,21 +48,42 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                                    validators=[validators.UniqueValidator(User.objects.all())])
 
     def create(self, validated_data):
-        user = User(username=validated_data['username'], email=validated_data['email'])
-        user.set_password(validated_data['password'])
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
         user.save()
+        return user
 
     def validate(self, attrs):
         logger.debug("register user: {}".format(attrs))
-        # v_code = VerifyCode.objects.filter(mobile=attrs['username']).last()
-        # if not v_code:
-        #     raise ValidationError("验证码错误")
-        # end_time = datetime.datetime.now() - datetime.timedelta(minutes=settings.REGISTER_CONFIRM_TIMEDELTA)
-        # if end_time > v_code.created_time:
-        #     raise ValidationError("验证码已过期")
-        # attrs['mobile'] = attrs['username']
         return attrs
 
     class Meta:
         model = User
-        fields = ('username', 'mobile', 'password', 'email')
+        fields = ('username', 'password', 'email')
+
+
+class UserFavDetailSerializer(serializers.ModelSerializer):
+    """用户收藏详情"""
+    goods = GoodsSerializer(many=True)
+
+    class Meta:
+        model = UserFav
+        fields = ('goods', 'id')
+
+
+class UserFavSerializer(serializers.ModelSerializer):
+    """用户添加收藏"""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = UserFav
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('user', 'goods'),
+                message='商品已收藏'
+            )
+        ]
+        fields = ('user', 'goods', 'id')
