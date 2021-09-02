@@ -107,6 +107,7 @@ def active_user(request, token):
 class UserCollectViewSet(mixins.CreateModelMixin,
                          mixins.ListModelMixin,
                          mixins.RetrieveModelMixin,
+                         mixins.DestroyModelMixin,
                          viewsets.GenericViewSet):
     """
     list:
@@ -114,15 +115,20 @@ class UserCollectViewSet(mixins.CreateModelMixin,
 
         ---
     retrieve:
-        判断某个商品是否已经收藏
+        收藏详情
 
         ---
     create:
-        收藏商品
+        用户新增收藏商品
+
+        ---
+    destroy:
+        删除收藏商品
 
         ---
     """
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+    lookup_field = 'goods_id'
 
     def get_queryset(self):
         return UserFav.objects.filter(user=self.request.user)

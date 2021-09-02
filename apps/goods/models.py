@@ -52,7 +52,7 @@ class Goods(BaseModel):
     """
     商品
     """
-    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE, help_text="商品类目")
+    category = models.ForeignKey(GoodsCategory, related_name='category', on_delete=models.CASCADE, help_text="商品类目")
     goods_sn = models.CharField(_('goods sn'), max_length=50, default="", help_text="商品唯一货号")
     name = models.CharField(_('goods name'), max_length=100, help_text="商品名")
     click_num = models.IntegerField(_('goods click number'), default=0, help_text="点击数")
@@ -95,7 +95,7 @@ class GoodsImage(BaseModel):
     """
     商品轮播图
     """
-    goods = models.ForeignKey(Goods, on_delete=models.CASCADE)
+    goods = models.ForeignKey(Goods, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(_('goods image'), upload_to="goods/image/", help_text="图片", null=True, blank=True)
 
     class Meta:

@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from common.validators import PhoneValidator
 from apps.user.models import User, VerifyCode, UserFav, UserAddress
-from apps.goods.serializers import GoodsSerializer
+from apps.goods.serializers import GoodsDetailSerializer
 
 logger = logging.getLogger('debug')
 
@@ -65,7 +65,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 class UserFavDetailSerializer(serializers.ModelSerializer):
     """用户收藏详情"""
-    goods = GoodsSerializer(many=True)
+    goods = GoodsDetailSerializer(many=True)
 
     class Meta:
         model = UserFav
@@ -73,7 +73,7 @@ class UserFavDetailSerializer(serializers.ModelSerializer):
 
 
 class UserFavSerializer(serializers.ModelSerializer):
-    """用户添加收藏"""
+    """用户收藏"""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 

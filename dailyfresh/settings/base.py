@@ -112,7 +112,7 @@ LANGUAGES = (
 
 # 翻译文件所在目录，需要手工创建
 LOCALE_PATHS = (
-    os.path.join(BASE_DIR, 'locale'),
+    os.path.join(ROOT_BASE_DIR, 'locale'),
 )
 
 # 自定义登录
@@ -122,11 +122,11 @@ AUTH_USER_MODEL = 'user.User'
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 # 静态文件
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(ROOT_BASE_DIR, 'static'),)
 
 # 上传文件
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(ROOT_BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 
 # User Register Confirm Timedelta
@@ -148,8 +148,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-    'PAGE_SIZE': 15,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 15,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'EXCEPTION_HANDLER': 'common.exceptions.my_exception_handler',
 
