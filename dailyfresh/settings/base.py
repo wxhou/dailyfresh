@@ -133,17 +133,26 @@ CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 REGISTER_CONFIRM_TIMEDELTA = 30
 
 AUTHENTICATION_BACKENDS = (
-    'user.views.CustomBackend',
+    'user.backends.CustomBackend',
 )
+
+from rest_framework import permissions
+
+
+
+
+
 
 # rest_framework
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated core.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication'
     ),
@@ -152,7 +161,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 15,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'EXCEPTION_HANDLER': 'common.exceptions.my_exception_handler',
-
 }
 
 # SWAGGER    drf-swagger

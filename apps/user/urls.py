@@ -26,4 +26,6 @@ urlpatterns = [
 router = DefaultRouter()
 router.register(r'', views.UserViewSet)
 router.register(r'collect', views.UserCollectViewSet, basename='collect')
+router.register(r'message', views.UserMessageViewSet, basename='message')
+router.register(r'address', views.UserAddressViewSet, basename='address')
 urlpatterns += router.urls

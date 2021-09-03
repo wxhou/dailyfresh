@@ -2,8 +2,6 @@ import logging
 from django.conf import settings
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework import viewsets
@@ -15,38 +13,35 @@ from common.errors import System, Account
 from common.permissions import IsOwnerOrReadOnly
 from common.response import response_ok, response_err
 from utils.timekit import timedelta_from_now
-from apps.user.models import User, VerifyCode, UserFav, UserAddress
-from .serializers import (SmsSerializer, UserRegisterSerializer, UserDetailSerializer,
-                          UserFavSerializer, UserFavDetailSerializer)
+from apps.user.models import User, VerifyCode, UserFav, UserLeavingMessage, UserAddress
+from .serializers import (LoginSerializer, UserRegisterSerializer, UserDetailSerializer,
+                          UserFavSerializer, UserFavDetailSerializer,
+                          UserMessageSerializer, UserAddressSerializer)
 from .tasks import send_register_email
 
 # Create your views here.
 logger = logging.getLogger('debug')
 
 
-class CustomBackend(ModelBackend):
-    """
-    验证函数
-    """
-
-    def authenticate(self, request, username=None, password=None, **kwargs):
-        try:
-            user = User.objects.get(Q(username=username) | Q(email=username))
-            if user.check_password(password):
-                return user
-        except User.DoesNotExist:
-            return None
+class LoginViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = LoginSerializer
 
 
 class UserViewSet(mixins.CreateModelMixin,
                   mixins.RetrieveModelMixin,
+                  mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
     """
     retrieve:
         获取用户详情
 
         ---
+    create:
+        添加留言
 
+        ---
+    destroy:
     """
     queryset = User.objects.filter(is_active=True)
 
@@ -131,9 +126,67 @@ class UserCollectViewSet(mixins.CreateModelMixin,
     lookup_field = 'goods_id'
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            # queryset just for schema generation metadata
+            return UserFav.objects.none()
         return UserFav.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == 'list':
             return UserFavDetailSerializer
         return UserFavSerializer
+
+
+class UserMessageViewSet(mixins.CreateModelMixin,
+                         mixins.ListModelMixin,
+                         mixins.RetrieveModelMixin,
+                         viewsets.GenericViewSet):
+    """用户留言
+    create:
+        添加新的留言
+
+        ---
+    list:
+        留言列表
+
+        ---
+    retrieve:
+        留言详情
+
+        ---
+    """
+    serializer_class = UserMessageSerializer
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            # queryset just for schema generation metadata
+            return UserLeavingMessage.objects.none()
+        return UserLeavingMessage.objects.filter(is_deleted=False, status=0, user=self.request.user)
+
+
+class UserAddressViewSet(viewsets.ModelViewSet):
+    """用户收货地址管理
+    create:
+        添加新的收货地址
+
+        ---
+    list:
+        收货地址列表
+
+        ---
+    retrieve:
+        收货地址详情
+
+        ---
+    destroy:
+        删除收货地址
+
+        ---
+    """
+    serializer_class = UserAddressSerializer
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            # queryset just for schema generation metadata
+            return UserAddress.objects.none()
+        return UserAddress.objects.filter(user=self.request.user, is_deleted=False, status=0)

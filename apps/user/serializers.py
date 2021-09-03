@@ -3,11 +3,12 @@
 import logging
 import datetime
 from django.conf import settings
+from django.contrib.auth import authenticate
 from rest_framework import serializers, validators
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from common.validators import PhoneValidator
-from apps.user.models import User, VerifyCode, UserFav, UserAddress
+from apps.user.models import User, VerifyCode, UserFav, UserAddress, UserLeavingMessage
 from apps.goods.serializers import GoodsDetailSerializer
 
 logger = logging.getLogger('debug')
@@ -18,6 +19,13 @@ class SmsSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=11,
                                    validators=[PhoneValidator,
                                                validators.UniqueValidator(User.objects.all())])
+
+
+class LoginSerializer(serializers.Serializer):
+    password = serializers.CharField(style={'input_type': 'password'}, help_text='密码', required=True, write_only=True,
+                                     min_length=8, max_length=16
+                                     )
+    email = serializers.EmailField(required=True, help_text='注册邮箱', max_length=128)
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -87,3 +95,21 @@ class UserFavSerializer(serializers.ModelSerializer):
             )
         ]
         fields = ('user', 'goods', 'id')
+
+
+class UserMessageSerializer(serializers.ModelSerializer):
+    """用户留言管理"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = UserLeavingMessage
+        exclude = ('is_deleted', 'status')
+
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    """用户地址管理"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = UserAddress
+        exclude = ('is_deleted', 'status')
