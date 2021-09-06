@@ -119,6 +119,13 @@ LOCALE_PATHS = (
 
 # 自定义登录
 AUTH_USER_MODEL = 'user.User'
+# User Register Confirm Timedelta
+REGISTER_CONFIRM_TIMEDELTA = 30
+
+AUTHENTICATION_BACKENDS = (
+    'user.backends.CustomBackend',
+)
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -130,19 +137,6 @@ STATICFILES_DIRS = (os.path.join(ROOT_BASE_DIR, 'static'),)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(ROOT_BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'ckeditor/'
-
-# User Register Confirm Timedelta
-REGISTER_CONFIRM_TIMEDELTA = 30
-
-AUTHENTICATION_BACKENDS = (
-    'user.backends.CustomBackend',
-)
-
-from rest_framework import permissions
-
-
-
-
 
 
 # rest_framework

@@ -22,6 +22,7 @@ class SmsSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """登录"""
     password = serializers.CharField(style={'input_type': 'password'}, help_text='密码', required=True, write_only=True,
                                      min_length=8, max_length=16
                                      )

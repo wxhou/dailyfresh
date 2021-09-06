@@ -20,11 +20,13 @@ from apps.user import views
 app_name = 'user'
 
 urlpatterns = [
-    path('active/<str:token>', views.active_user, name='active')
+    path('active/<str:token>', views.active_user, name='active'),
+    path('logout/', views.LogoutAPIView.as_view(), name='logout')
 ]
 
 router = DefaultRouter()
 router.register(r'', views.UserViewSet)
+router.register(r'login', views.LoginViewSet, basename='login')
 router.register(r'collect', views.UserCollectViewSet, basename='collect')
 router.register(r'message', views.UserMessageViewSet, basename='message')
 router.register(r'address', views.UserAddressViewSet, basename='address')

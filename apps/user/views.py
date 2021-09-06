@@ -1,31 +1,88 @@
 import logging
 from django.conf import settings
 from django.urls import reverse
+from django.contrib import auth
 from django.utils.translation import gettext_lazy as _
-from rest_framework import status
-from rest_framework import mixins
-from rest_framework import viewsets
-from rest_framework import permissions
+from rest_framework import status, generics, viewsets, mixins, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+
 from common.errors import System, Account
 from common.permissions import IsOwnerOrReadOnly
 from common.response import response_ok, response_err
 from utils.timekit import timedelta_from_now
 from apps.user.models import User, VerifyCode, UserFav, UserLeavingMessage, UserAddress
-from .serializers import (LoginSerializer, UserRegisterSerializer, UserDetailSerializer,
-                          UserFavSerializer, UserFavDetailSerializer,
-                          UserMessageSerializer, UserAddressSerializer)
-from .tasks import send_register_email
+from apps.user.serializers import (serializers, LoginSerializer,
+                                   UserRegisterSerializer, UserDetailSerializer,
+                                   UserFavSerializer, UserFavDetailSerializer,
+                                   UserMessageSerializer, UserAddressSerializer)
+from apps.user.tasks import send_register_email
 
 # Create your views here.
 logger = logging.getLogger('debug')
 
 
 class LoginViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.filter(is_active=True)
+    queryset = User.objects.filter()
     serializer_class = LoginSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def create(self, request, *args, **kwargs):
+        """
+        登录
+
+        ---
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+        if user is None:
+            return Response(
+                {'user': [_('user not exist or username/password is error')]},
+                status=status.HTTP_403_FORBIDDEN)
+        headers = self.get_success_headers(serializer.data)
+        auth.login(self.request, user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        data = serializer.validated_data
+        user = auth.authenticate(self.request, username=data['email'], password=data['password'])
+        serializer.save()
+        return user
+
+
+class LogoutAPIView(generics.GenericAPIView):
+    queryset = None
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = serializers.Serializer
+
+    # @action(methods=['post', 'get'], detail=False, basename='logout')
+    def logout(self):
+        """
+        退出登录
+
+        ---
+        """
+        auth.logout(self.request)
+        return Response(response_ok(), status=status.HTTP_200_OK)
+
+    def get(self, request, *args, **kwargs):
+        """
+        退出登录
+
+        ---
+        """
+        return self.logout()
+
+    def post(self, request, *args, **kwargs):
+        """
+        退出登录
+
+        ---
+        """
+        return self.logout()
 
 
 class UserViewSet(mixins.CreateModelMixin,
