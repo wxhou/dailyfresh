@@ -3,14 +3,16 @@ response.py
 """
 
 
-def response_ok(data=None, **kwargs):
-    """正确返回"""
-    resp = {"errcode": 0, "errmsg": 'success'}
-    if data:
-        resp['data'] = data
-    return {**resp, **kwargs}
+def make_response(data=None, errcode=0, errmsg='success', **kwargs):
+    """返回"""
+    res = {
+        'errcode': errcode,
+        'errmsg': errmsg
+    }
+    if data is not None:
+        res['data'] = data
+    return {**res, **kwargs}
 
 
-def response_err(errcode=None, errmsg=''):
-    """错误返回"""
-    return {"errcode": errcode, "errmsg": errmsg}
+if __name__ == '__main__':
+    pass

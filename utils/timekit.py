@@ -15,14 +15,6 @@ def get_now_tz(tz=pytz.UTC):
     return datetime.datetime.now(tz=tz)
 
 
-def get_now():
-    """
-    返回现在时间
-    :return:
-    """
-    return datetime.datetime.now()
-
-
 def local_time():
     """返回现在Unix时间"""
     return time.time()
@@ -47,7 +39,7 @@ def timedelta_from_future(*args, **kwargs):
     :param kwargs:
     :return:
     """
-    return get_now() + datetime.timedelta(*args, **kwargs)
+    return timezone.now() + datetime.timedelta(*args, **kwargs)
 
 
 def timedelta_from_now(*args, **kwargs):
@@ -55,7 +47,7 @@ def timedelta_from_now(*args, **kwargs):
     时间差
         获取过去距离今天的某一天
     """
-    return get_now_tz() - datetime.timedelta(*args, **kwargs)
+    return timezone.now() - datetime.timedelta(*args, **kwargs)
 
 
 def fmt_time(naive_time):

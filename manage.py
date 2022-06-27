@@ -4,8 +4,12 @@ import os
 import sys
 
 
+env = os.environ.get('DAILYFRESH')
+if env is None:
+    raise EnvironmentError("环境变量`DAILYFRESH`未设置！")
+
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings.dev')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'dailyfresh.settings.{env}')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

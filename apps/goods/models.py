@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ckeditor_uploader.fields import RichTextUploadingField
+from django_minio_backend import MinioBackend, iso_date_prefix
 from common.models import BaseModel
 from common.choices import CATEGORY_TYPE
 
@@ -37,7 +38,8 @@ class GoodsCategoryBrand(BaseModel):
                                  on_delete=models.CASCADE, help_text="商品类目")
     name = models.CharField(_("brand name"), default="", max_length=30, help_text="品牌名")
     desc = models.TextField(_('brand desc'), default="", max_length=200, help_text="品牌描述")
-    image = models.ImageField(upload_to="brands/", max_length=200, help_text='品牌图片')
+    image = models.ImageField(_("brand image"), storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                              upload_to=iso_date_prefix, max_length=200, help_text='品牌图片')
 
     class Meta:
         db_table = "goods_brand"
@@ -64,7 +66,9 @@ class Goods(BaseModel):
     goods_brief = models.TextField(_('goods brief'), max_length=500, help_text="商品简短描述")
     goods_desc = RichTextUploadingField()
     ship_free = models.BooleanField(_('ship free'), default=True, help_text="是否承担运费")
-    goods_front_image = models.ImageField(_('goods front image'), upload_to="goods/cover/", null=True, blank=True,
+    goods_front_image = models.ImageField(_('goods front image'),
+                                          storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                                          upload_to=iso_date_prefix, null=True, blank=True,
                                           help_text="封面图")
     is_new = models.BooleanField(_('is new'), default=False, help_text="是否新品")
     is_hot = models.BooleanField(_('is hot'), default=False, help_text="是否热销")
@@ -96,7 +100,8 @@ class GoodsImage(BaseModel):
     商品轮播图
     """
     goods = models.ForeignKey(Goods, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(_('goods image'), upload_to="goods/image/", help_text="图片", null=True, blank=True)
+    image = models.ImageField(_('goods image'), storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                              upload_to=iso_date_prefix, help_text="图片", null=True, blank=True)
 
     class Meta:
         db_table = 'goods_image'
@@ -112,7 +117,8 @@ class Banner(BaseModel):
     轮播的商品
     """
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, help_text="商品")
-    image = models.ImageField(upload_to='goods/banner/', verbose_name="轮播图片")
+    image = models.ImageField(_("banner image"), storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                              upload_to=iso_date_prefix, help_text="轮播图片")
     index = models.IntegerField(default=0, verbose_name="轮播顺序")
 
     class Meta:

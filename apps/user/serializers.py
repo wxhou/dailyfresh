@@ -1,31 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import logging
-import datetime
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.utils.timezone import now
+from django.core.validators import FileExtensionValidator
 from rest_framework import serializers, validators
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
-from common.validators import PhoneValidator
-from apps.user.models import User, VerifyCode, UserFav, UserAddress, UserLeavingMessage
+from .models import User, UserFav, UserAddress, UserLeavingMessage
 from apps.goods.serializers import GoodsDetailSerializer
 
 logger = logging.getLogger('debug')
 
 
-class SmsSerializer(serializers.Serializer):
-    """验证码"""
-    mobile = serializers.CharField(max_length=11,
-                                   validators=[PhoneValidator,
-                                               validators.UniqueValidator(User.objects.all())])
-
-
 class LoginSerializer(serializers.Serializer):
     """登录"""
-    password = serializers.CharField(style={'input_type': 'password'}, help_text='密码', required=True, write_only=True,
-                                     min_length=8, max_length=16
-                                     )
+    password = serializers.CharField(style={'input_type': 'password'}, help_text='密码',
+                                     required=True, write_only=True,
+                                     min_length=8, max_length=16)
     email = serializers.EmailField(required=True, help_text='注册邮箱', max_length=128)
 
 
@@ -34,7 +28,19 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("name", "gender", "birthday", "email", "mobile")
+        fields = ("id", "username", "name", "gender", "birthday", "email", "mobile", "avatar")
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class UserAvatarSerializer(serializers.Serializer):
+    avatar = serializers.FileField(required=True, help_text="上传头像",
+                                   validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -69,7 +75,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'email')
+        fields = ('username', 'password', 'email', "mobile")
 
 
 class UserFavDetailSerializer(serializers.ModelSerializer):
@@ -101,6 +107,8 @@ class UserFavSerializer(serializers.ModelSerializer):
 class UserMessageSerializer(serializers.ModelSerializer):
     """用户留言管理"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    file = serializers.FileField(required=False, help_text="上传文件",
+                                 validators=[FileExtensionValidator(['png', 'jpg', 'jpeg', 'mp4'])])
 
     class Meta:
         model = UserLeavingMessage

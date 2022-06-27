@@ -16,28 +16,26 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
-from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('user/', include('apps.user.urls')),
-    path('goods/', include('apps.goods.urls')),
+    path('', include('user.urls')),
+    path('goods/', include('goods.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('api-auth/', include('rest_framework.urls')),
-    path('api-token-auth/', views.obtain_auth_token)
+    path('api-auth/', include('rest_framework.urls'))
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # from django.conf.urls.static import static
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     schema_view = get_schema_view(
         openapi.Info(
-            title='每日新鲜',
+            title='dailyfresh',
             default_version='v2',
-            description="每日新鲜",
+            description="dailyfresh",
             terms_of_service="https://www.cnblog.com/wxhou",
             contact=openapi.Contact(email="1084502012@qq.com"),
             license=openapi.License(name="BSD License"),

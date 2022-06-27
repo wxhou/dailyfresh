@@ -8,7 +8,7 @@ choices.py
 user
 """
 SEX = (
-    ("male", u"男"),
+    ("male", "男"),
     ("female", "女")
 )
 

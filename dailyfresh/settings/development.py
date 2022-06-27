@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import sys
+from datetime import timedelta
 from django.conf.global_settings import gettext_noop
+from typing import List, Tuple
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'drf_yasg',  # swagger
     'django_celery_results',  # celery结果后端
     'corsheaders',
+    'django_minio_backend',
     'ckeditor',
     'ckeditor_uploader',
     'apps.user',
@@ -58,6 +62,46 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'dailyfresh.urls'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['*']
+
+# Database
+# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+DATABASES = {
+    'default': {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "drf_dailyfresh",
+        'USER': 'root',  # 用户名，可以自己创建用户
+        'PASSWORD': 'root1234',  # 密码
+        'HOST': '127.0.0.1',  # 服务IP
+        'PORT': '3306',  # 端口
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+# email
+EMAIL_HOST = 'smtp.126.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'twxhou@126.com'
+EMAIL_HOST_PASSWORD = 'GQWJDUKVWNOJLPOH'
 
 TEMPLATES = [
     {
@@ -97,16 +141,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
-
 LANGUAGE_CODE = 'zh-hans'
 
 TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
+# DATE_TIME takes effect, since the localization of l10n overrides DATETIME_FORMAT and DATE_FORMAT as documented at: https://docs.djangoproject.com/en/1.9/ref/settings/#date-format
 USE_L10N = True
 
-USE_TZ = True  # 默认是Ture，时间是utc时间，如要用本地时间，所用手动修改为false！！！！
+# USE_TZ = True  # 默认是Ture，时间是utc时间，如要用本地时间，所用手动修改为false！！！！
+USE_TZ = False
 
 LANGUAGES = (
     ('zh-hans', gettext_noop('Simplified Chinese')),
@@ -123,9 +168,8 @@ AUTH_USER_MODEL = 'user.User'
 REGISTER_CONFIRM_TIMEDELTA = 30
 
 AUTHENTICATION_BACKENDS = (
-    'user.backends.CustomBackend',
+    'apps.user.backends.CustomBackend',
 )
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -138,33 +182,74 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(ROOT_BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 
+# Celery消息队列
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'redis'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 # rest_framework
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated core.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    ],
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'DATETIME_INPUT_FORMATS': '%Y-%m-%d',
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication'
+        'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'common.paginations.StandardPagination',
     'PAGE_SIZE': 15,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'EXCEPTION_HANDLER': 'common.exceptions.my_exception_handler',
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
 # SWAGGER    drf-swagger
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
-        'basic': {
-            'type': 'basic'
-        }
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'}
     },
     'LOGIN_URL': '/api-auth/login/',
     'LOGOUT_URL': '/api-auth/logout/',
@@ -173,6 +258,7 @@ SWAGGER_SETTINGS = {
 REDOC_SETTINGS = {
     'LAZY_RENDERING': False,
 }
+
 # 日志系统
 LOG_FILE_DEBUG = os.path.join(ROOT_BASE_DIR, 'logs', 'debug.log')
 LOGGING = {
@@ -250,6 +336,20 @@ LOGGING = {
         },
     }
 }
+
+DEFAULT_FILE_STORAGE = 'django_minio_backend.models.MinioBackend'
+MINIO_ENDPOINT = '127.0.0.1:9000'
+MINIO_ACCESS_KEY = 'wxhou'
+MINIO_SECRET_KEY = 'hoou1993'
+MINIO_USE_HTTPS = False
+MINIO_URL_EXPIRY_HOURS = timedelta(days=1)  # Default is 7 days (longest) if not defined
+MINIO_CONSISTENCY_CHECK_ON_START = True
+MINIO_PRIVATE_BUCKETS = [
+    'dailyfresh-media-bucket'
+]
+MINIO_POLICY_HOOKS: List[Tuple[str, dict]] = []
+MINIO_MEDIA_FILES_BUCKET = 'dailyfresh-media-bucket'  # replacement for MEDIA_ROOT
+MINIO_BUCKET_CHECK_ON_SAVE = False  # Default: True // Creates bucket if missing, then save
 
 if __name__ == '__main__':
     print(BASE_DIR)

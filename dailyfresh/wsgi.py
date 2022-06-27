@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings.dev')
+env = os.environ.get('DAILYFRESH')
+if env is None:
+    raise EnvironmentError("环境变量`DAILYFRESH`未设置！")
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'dailyfresh.settings.{env}')
 
 application = get_wsgi_application()
