@@ -339,8 +339,8 @@ LOGGING = {
 
 DEFAULT_FILE_STORAGE = 'django_minio_backend.models.MinioBackend'
 MINIO_ENDPOINT = '127.0.0.1:9000'
-MINIO_ACCESS_KEY = 'wxhou'
-MINIO_SECRET_KEY = 'hoou1993'
+MINIO_ACCESS_KEY = 'admin'
+MINIO_SECRET_KEY = 'admin123'
 MINIO_USE_HTTPS = False
 MINIO_URL_EXPIRY_HOURS = timedelta(days=1)  # Default is 7 days (longest) if not defined
 MINIO_CONSISTENCY_CHECK_ON_START = True
