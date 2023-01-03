@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
+from django_minio_backend import MinioBackend, iso_date_prefix
 from common.models import BaseModel
 from common.choices import SEX, MESSAGE_CHOICES
 
@@ -13,7 +14,8 @@ class User(AbstractUser):
     gender = models.CharField(_('gender'), max_length=6, choices=SEX, default="female", help_text="性别")
     mobile = models.CharField(_('phone'), null=True, blank=True, max_length=11, help_text="电话")
     email = models.EmailField(_('email'), unique=True, max_length=128, null=True, blank=True, help_text="邮箱")
-    avatar = models.ImageField(_('avatar'), upload_to="avatar/", help_text="用户头像")
+    avatar = models.ImageField(_('avatar'), storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                               upload_to=iso_date_prefix, help_text="用户头像")
 
     class Meta:
         db_table = 'user'
@@ -21,6 +23,8 @@ class User(AbstractUser):
         verbose_name_plural = verbose_name
 
     def __str__(self):
+        if self.name:
+            return self.name
         return self.username
 
 
@@ -53,9 +57,6 @@ class UserFav(BaseModel):
         verbose_name_plural = verbose_name
         unique_together = ("user", "goods")
 
-    def __str__(self):
-        return self.user.username
-
 
 class UserLeavingMessage(BaseModel):
     """
@@ -66,7 +67,8 @@ class UserLeavingMessage(BaseModel):
                                                     help_text=u"留言类型: 1(留言),2(投诉),3(询问),4(售后),5(求购)")
     subject = models.CharField(_('subject'), max_length=100, default="", help_text="主题")
     content = models.TextField(_('message content'), default="", help_text="留言内容")
-    file = models.ImageField(_('upload message image'), upload_to="message/", help_text="上传的图片")
+    file = models.ImageField(_('upload message image'), storage=MinioBackend(bucket_name='dailyfresh-media-bucket'),
+                             upload_to=iso_date_prefix, help_text="留言的文件")
 
     class Meta:
         db_table = 'user_message'

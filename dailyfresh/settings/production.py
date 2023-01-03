@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.shop'
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -60,6 +61,43 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'dailyfresh.urls'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['*']
+
+# Database
+# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+DATABASES = {
+    'default': {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "drf_dailyfresh",
+        'USER': 'root',  # 用户名，可以自己创建用户
+        'PASSWORD': 'root1234',  # 密码
+        'HOST': '127.0.0.1',  # 服务IP
+        'PORT': '3306',  # 端口
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# email
+EMAIL_HOST = 'smtp.126.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'twxhou@126.com'
+EMAIL_HOST_PASSWORD = 'GQWJDUKVWNOJLPOH'
 
 TEMPLATES = [
     {
@@ -108,7 +146,8 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True  # 默认是Ture，时间是utc时间，如要用本地时间，所用手动修改为false！！！！
+# USE_TZ = True  # 默认是Ture，时间是utc时间，如要用本地时间，所用手动修改为false！！！！
+USE_TZ = True
 
 LANGUAGES = (
     ('zh-hans', gettext_noop('Simplified Chinese')),
@@ -121,6 +160,13 @@ LOCALE_PATHS = (
 
 # 自定义登录
 AUTH_USER_MODEL = 'user.User'
+# User Register Confirm Timedelta
+REGISTER_CONFIRM_TIMEDELTA = 30
+
+AUTHENTICATION_BACKENDS = (
+    'user.backends.CustomBackend',
+)
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -133,18 +179,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(ROOT_BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 
-# User Register Confirm Timedelta
-REGISTER_CONFIRM_TIMEDELTA = 30
 
-AUTHENTICATION_BACKENDS = (
-    'user.backends.CustomBackend',
-)
-
-from rest_framework import permissions
-
-
-
-
+# Celery消息队列
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'redis'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 
 # rest_framework

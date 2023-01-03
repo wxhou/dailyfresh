@@ -2,8 +2,12 @@ from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 
+env = os.environ.get('DAILYFRESH')
+if env is None:
+    raise EnvironmentError("环境变量`DAILYFRESH`未设置！")
+
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings.dev')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'dailyfresh.settings.{env}')
 
 app = Celery('dailyfresh')
 

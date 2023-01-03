@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 from rest_framework.exceptions import APIException
-from common.errors import System
-from common.response import response_err
+from common.errors import Errcode
+from common.response import make_response
 
 logger = logging.getLogger('debug')
 
@@ -41,13 +41,12 @@ def my_exception_handler(exc, context):
     if response is None:
         # 服务器内部错误
         logger.critical(traceback.format_exc())
-        return Response(response_err(errcode=System.ERROR, errmsg=format(exc)),
+        return Response(make_response(errcode=Errcode.COMMON_ERROR, errmsg=format(exc)),
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     # 保存错误码
     if hasattr(exc, 'err_code'):
         response.data['errcode'] = exc.err_code
         response.status_code = status.HTTP_200_OK
-    detail = response.data.pop('detail', None)
-    if detail is not None:
+    if detail := response.data.pop('detail', None):
         response.data['errmsg'] = detail
     return response
