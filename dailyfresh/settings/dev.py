@@ -10,7 +10,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "drf_dailyfresh",
+        "NAME": "db_dailyfresh",
         'USER': 'root',  # 用户名，可以自己创建用户
         'PASSWORD': 'root1234',  # 密码
         'HOST': '127.0.0.1',  # 服务IP
@@ -45,3 +45,5 @@ CELERY_CACHE_BACKEND = 'redis'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+

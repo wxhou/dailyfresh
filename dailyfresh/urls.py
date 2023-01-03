@@ -24,6 +24,7 @@ from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('base/', include('apps.base.urls')),
     path('user/', include('apps.user.urls')),
     path('goods/', include('apps.goods.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),

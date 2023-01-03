@@ -3,15 +3,16 @@
 import logging
 import datetime
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from rest_framework import serializers, validators
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from common.validators import PhoneValidator
-from apps.user.models import User, VerifyCode, UserFav, UserAddress, UserLeavingMessage
+from apps.user.models import VerifyCode, UserFav, UserAddress, UserLeavingMessage
 from apps.goods.serializers import GoodsDetailSerializer
 
 logger = logging.getLogger('debug')
+User = get_user_model()
 
 
 class SmsSerializer(serializers.Serializer):

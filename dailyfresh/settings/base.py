@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'ckeditor',
     'ckeditor_uploader',
+    'simpleui',
+    'apps.base',
     'apps.user',
     'apps.goods',
     'apps.shop'
