@@ -6,7 +6,7 @@ from rest_framework import serializers
 logger = logging.getLogger('debug')
 
 
-class FileSerializer(serializers.Serializer):
+class UploadSerializer(serializers.Serializer):
     file = serializers.FileField(help_text='上传文件')
     uniqueId = serializers.CharField(help_text='MD5')
 
